@@ -5,38 +5,7 @@ if (index < 0 || index >= buckets.length) {
 }
 */
 
-class Node {
-  constructor(value = null, next = null) {
-    this.value = value;
-    this.next = next;
-  }
-}
-
-class LinkedList {
-  constructor() {
-    this.head = null;
-    this.size = 0;
-  }
-
-  // add to the end of the list
-  append(value) {
-    if (!this.head) {
-      this.head = new Node(value);
-      this.size++;
-      return;
-    }
-
-    let current = this.head;
-    while (current) {
-      if (!current.next) {
-        current.next = new Node(value);
-        this.size++;
-        return;
-      }
-      current = current.next;
-    }
-  }
-}
+import { Node, LinkedList } from "./linked-list.js";
 
 class HashMap {
   constructor(items) {
@@ -56,20 +25,33 @@ class HashMap {
     return hashCode;
   }
 
-  // needs improvement
   set(key, value) {
     let hashcode = this.hash(key);
     console.log(key, hashcode);
 
+    // If it's the same key = UPDATE
     if (
       this.buckets[hashcode] !== undefined &&
-      this.buckets[hashcode].key === key
+      this.buckets[hashcode].head.value.key === key
     ) {
-      this.buckets[hashcode].value === value;
+      console.log("dupa2");
+      this.buckets[hashcode].head.value.value === value;
     }
 
-    this.buckets[hashcode] = { key, value };
-    // If it's the same key = UPDATE
+    // If it's COLLISION = add next to the linked list
+    if (
+      this.buckets[hashcode] !== undefined &&
+      this.buckets[hashcode].head.value.key !== key
+    ) {
+      console.log("dupa");
+      this.buckets[hashcode].append({ key, value });
+    }
+
+    if (this.buckets[hashcode] === undefined) {
+      // this.buckets[hashcode] = { key, value }; -- obsolete
+      this.buckets[hashcode] = new LinkedList();
+      this.buckets[hashcode].append({ key, value });
+    }
   }
 
   get(key) {
@@ -138,6 +120,7 @@ class HashMap {
 const test = new HashMap(16);
 test.set("apple", "red");
 test.set("banana", "yellow");
+test.set("banana", "yellow2");
 test.set("carrot", "orange");
 test.set("dog", "brown");
 test.set("elephant", "gray");
