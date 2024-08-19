@@ -3,15 +3,35 @@
 import { Node, LinkedList } from "./linked-list.js";
 
 class HashMap {
-  constructor(items) {
-    this.items = items;
-    this.buckets = new Array(items);
+  constructor() {
+    this.buckets = new Array(16);
   }
 
+  // loadFactor() {
+  //   let load = this.items;
+  //   if (this.length() / load > 0.8) {
+  //     this.buckets.length = load * 2;
+  //   }
+  // }
+
   loadFactor() {
-    let load = this.items;
-    if (this.length() / load > 0.8) {
-      this.buckets.length = load * 2;
+    let load = this.buckets.length;
+    // console.log(this.length() / load);
+    // console.log(this.buckets);
+    if (this.length() / load > 0.75) {
+      let oldList = this.buckets;
+      let length = load * 2;
+      this.buckets = new Array(length);
+
+      oldList.forEach((i) => {
+        if (i) {
+          let node = i.head;
+          while (node) {
+            this.set(node.data.key, node.data.value);
+            node = node.next;
+          }
+        }
+      });
     }
   }
 
@@ -29,7 +49,7 @@ class HashMap {
 
   set(key, value) {
     let hashcode = this.hash(key);
-    console.log(key, hashcode);
+    // console.log(key, hashcode);
 
     if (this.buckets[hashcode] === undefined) {
       this.buckets[hashcode] = new LinkedList();
@@ -59,6 +79,7 @@ class HashMap {
     let hashcode = this.hash(key);
     if (this.buckets[hashcode]) {
       console.log(this.buckets[hashcode].search(key));
+      console.log(hashcode);
     } else console.log(null);
   }
 
@@ -139,7 +160,7 @@ class HashMap {
   }
 }
 
-const test = new HashMap(16);
+const test = new HashMap();
 
 test.set("apple", "red");
 test.set("banana", "yellow");
@@ -159,6 +180,8 @@ test.set("lion", "golden");
 console.log(test.entries());
 
 console.log("--------------");
+
+test.set("moon", "silver");
 
 console.log(test.buckets);
 console.log(test.length());
