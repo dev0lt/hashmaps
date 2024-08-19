@@ -1,9 +1,4 @@
 "use strict";
-/*
-if (index < 0 || index >= buckets.length) {
-  throw new Error("Trying to access index out of bound");
-}
-*/
 
 import { Node, LinkedList } from "./linked-list.js";
 
@@ -11,6 +6,13 @@ class HashMap {
   constructor(items) {
     this.items = items;
     this.buckets = new Array(items);
+  }
+
+  loadFactor() {
+    let load = this.items;
+    if (this.length() / load > 0.8) {
+      this.buckets.length = load * 2;
+    }
   }
 
   hash(key) {
@@ -29,54 +31,62 @@ class HashMap {
     let hashcode = this.hash(key);
     console.log(key, hashcode);
 
+    if (this.buckets[hashcode] === undefined) {
+      this.buckets[hashcode] = new LinkedList();
+      this.buckets[hashcode].append({ key, value });
+    }
+
     // If it's the same key = UPDATE
     if (
       this.buckets[hashcode] !== undefined &&
-      this.buckets[hashcode].head.value.key === key
+      this.buckets[hashcode].contains(key)
     ) {
-      console.log("dupa2");
-      this.buckets[hashcode].head.value.value === value;
+      this.buckets[hashcode].update(key, value);
     }
 
     // If it's COLLISION = add next to the linked list
     if (
       this.buckets[hashcode] !== undefined &&
-      this.buckets[hashcode].head.value.key !== key
+      !this.buckets[hashcode].contains(key)
     ) {
-      console.log("dupa");
       this.buckets[hashcode].append({ key, value });
     }
 
-    if (this.buckets[hashcode] === undefined) {
-      // this.buckets[hashcode] = { key, value }; -- obsolete
-      this.buckets[hashcode] = new LinkedList();
-      this.buckets[hashcode].append({ key, value });
-    }
+    this.loadFactor();
   }
 
   get(key) {
     let hashcode = this.hash(key);
-    console.log(this.buckets[hashcode].value);
+    if (this.buckets[hashcode]) {
+      console.log(this.buckets[hashcode].search(key));
+    } else console.log(null);
   }
 
   has(key) {
     let hashcode = this.hash(key);
-    console.log(this.buckets[hashcode] ? true : false);
+
+    if (this.buckets[hashcode]) {
+      console.log(this.buckets[hashcode].search(key) ? true : false);
+    }
   }
 
   remove(key) {
     let hashcode = this.hash(key);
     if (this.buckets[hashcode]) {
-      this.buckets[hashcode] = undefined;
+      if (this.buckets[hashcode].remove(key) === -1) {
+        this.buckets[hashcode] = undefined;
+        return;
+      }
+      this.buckets[hashcode].remove(key);
       console.log(true);
     } else console.log(false);
   }
 
-  mapLength() {
+  length() {
     let count = 0;
     this.buckets.forEach((i) => {
       if (i) {
-        count++;
+        count += i.size;
       }
     });
     return count;
@@ -90,7 +100,11 @@ class HashMap {
     let arr = [];
     this.buckets.forEach((i) => {
       if (i) {
-        arr.push(i.key);
+        let node = i.head;
+        while (node) {
+          arr.push(node.data.key);
+          node = node.next;
+        }
       }
     });
     return arr;
@@ -100,7 +114,11 @@ class HashMap {
     let arr = [];
     this.buckets.forEach((i) => {
       if (i) {
-        arr.push(i.value);
+        let node = i.head;
+        while (node) {
+          arr.push(node.data.value);
+          node = node.next;
+        }
       }
     });
     return arr;
@@ -110,7 +128,11 @@ class HashMap {
     let arr = [];
     this.buckets.forEach((i) => {
       if (i) {
-        arr.push([i.key, i.value]);
+        let node = i.head;
+        while (node) {
+          arr.push([node.data.key, node.data.value]);
+          node = node.next;
+        }
       }
     });
     return arr;
@@ -118,6 +140,7 @@ class HashMap {
 }
 
 const test = new HashMap(16);
+
 test.set("apple", "red");
 test.set("banana", "yellow");
 test.set("banana", "yellow2");
@@ -127,19 +150,17 @@ test.set("elephant", "gray");
 test.set("frog", "green");
 test.set("grape", "purple");
 test.set("hat", "black");
+test.set("hat", "black2");
 test.set("ice cream", "white");
 test.set("jacket", "blue");
 test.set("kite", "pink");
 test.set("lion", "golden");
-console.log(test.buckets);
-console.log(test.mapLength());
 
-// myHashmap.get("igor");
-// myHashmap.has("piotr");
-// myHashmap.remove("piotr");
-// // myHashmap.remove("igor");
-// myHashmap.has("igor");
-// console.log(myHashmap.keys());
-// console.log(myHashmap.values());
-// console.log(myHashmap.entries());
-// console.log();
+console.log(test.entries());
+
+console.log("--------------");
+
+console.log(test.buckets);
+console.log(test.length());
+
+console.log();
